@@ -2,40 +2,31 @@
 	<div id="app">
 		<h1>{{ title }}</h1>
 		<Navbar />
-		<AllFriends :friends="people" @unfriend="deleteFriend" />
-		<OnlineFriends :friends="people" />
+		<Blogs />
 	</div>
 </template>
 
 <script>
-import Navbar from "./components/Navbar";
-import AllFriends from "./components/AllFriends";
-import OnlineFriends from "./components/OnlineFriends";
+import Navbar from './components/Navbar'
+import Blogs from './components/Blogs'
 
 export default {
-	name: "app",
+	name: 'app',
 	components: {
 		Navbar,
-		AllFriends,
-		OnlineFriends
+		Blogs,
 	},
 	data() {
 		return {
-			title: "My first Vue.js app!",
-			people: [
-				{ name: "Mario", online: true },
-				{ name: "Luigi", online: true },
-				{ name: "Karol", online: false },
-				{ name: "Princess", online: false }
-			]
-		};
+			title: 'My first Vue.js app!',
+		}
 	},
 	methods: {
 		deleteFriend(payload) {
-         this.people.splice(payload.id, 1)
-		}
-	}
-};
+			this.people.splice(payload.id, 1)
+		},
+	},
+}
 </script>
 
 <style lang="sass">
