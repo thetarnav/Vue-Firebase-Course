@@ -1,10 +1,10 @@
 <template>
-   <div id="app">
-      <h1>{{title}}</h1>
-      <Navbar />
-		<AllFriends :friends="people" />
+	<div id="app">
+		<h1>{{ title }}</h1>
+		<Navbar />
+		<AllFriends :friends="people" @unfriend="deleteFriend" />
 		<OnlineFriends :friends="people" />
-   </div>
+	</div>
 </template>
 
 <script>
@@ -13,23 +13,28 @@ import AllFriends from "./components/AllFriends";
 import OnlineFriends from "./components/OnlineFriends";
 
 export default {
-   name: "app",
-   components: {
+	name: "app",
+	components: {
 		Navbar,
 		AllFriends,
-		OnlineFriends,
-   },
-   data() {
-      return {
+		OnlineFriends
+	},
+	data() {
+		return {
 			title: "My first Vue.js app!",
 			people: [
-            { name: "Mario", online: true },
-            { name: "Luigi", online: true },
-            { name: "Karol", online: false },
-            { name: "Princess", online: false }
-         ],
-      };
-   }
+				{ name: "Mario", online: true },
+				{ name: "Luigi", online: true },
+				{ name: "Karol", online: false },
+				{ name: "Princess", online: false }
+			]
+		};
+	},
+	methods: {
+		deleteFriend(payload) {
+         this.people.splice(payload.id, 1)
+		}
+	}
 };
 </script>
 
