@@ -43,8 +43,6 @@
 import db from '../firebase/init'
 import slugify from 'slugify'
 
-import Feedback from '../components/Feedback'
-
 const inputErrAn = input => {
 	input.classList.remove('wrong')
 	void input.offsetWidth
@@ -54,7 +52,7 @@ const inputErrAn = input => {
 export default {
 	name: 'AddSmoothie',
 	components: {
-		Feedback,
+		Feedback: () => import('../components/Feedback'),
 	},
 	data() {
 		return {

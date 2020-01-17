@@ -38,8 +38,6 @@
 <script>
 import db from '@/firebase/init'
 
-import Feedback from '../components/Feedback'
-
 const inputErrAn = input => {
 	input.classList.remove('wrong')
 	void input.offsetWidth
@@ -49,7 +47,7 @@ const inputErrAn = input => {
 export default {
 	name: 'EditSmoothie',
 	components: {
-		Feedback,
+		Feedback: () => import('../components/Feedback'),
 	},
 	data() {
 		return {
@@ -70,7 +68,10 @@ export default {
 				this.ingredients = ingredients
 				this.id = doc.id
 			}),
-		)
+		).catch(err => {
+			console.error(err)
+			this.$router.push({name: 'Home'})
+		})
 	},
 	methods: {
 		addIng() {
@@ -94,7 +95,31 @@ export default {
 			this.ingredients = this.ingredients.filter(ing => ing !== name)
 		},
 		EditSmoothie() {
-			console.log(this.title, this.ingredients)
+			let isEmpty = false
+			this.feedback = null
+			if (!this.ingredients.length) {
+				inputErrAn(ingInput)
+				this.feedback = 'This smoothie needs some ingredients'
+				isEmpty = true
+			}
+			if (!this.title) {
+				inputErrAn(titleInput)
+				this.feedback = 'Every Smoothie needs a title'
+				isEmpty = true
+			}
+			if (isEmpty) return
+
+			db.collection('smoothies').doc(this.id)
+				.update({
+					title: this.title,
+					ingredients: this.ingredients,
+					slug: this.slug,
+				})
+				.then(() => this.$router.push({ name: 'Home' }))
+				.catch(err => {
+					this.feedback = 'Sorry, something went wrong'
+					console.error(err)
+				})
 		},
 	},
 }
