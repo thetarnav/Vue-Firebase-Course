@@ -1,6 +1,6 @@
 <template>
 	<div class="home container">
-		<div v-for="smoothie in smoothies" :key="smoothie.id" class="card" @click="editSmoothie($event, smoothie.slug)" :data-slug="smoothie.slug">
+		<div v-for="smoothie in smoothies" :key="smoothie.id" class="card" @click="editSmoothie($event, smoothie.slug)">
 			<div class="card-content">
 				<div class="card-management">
 					<i class="material-icons management-btn edit">edit</i>
@@ -39,9 +39,6 @@ export default {
 						smoothie => smoothie.id !== id,
 					)
 				})
-		},
-		updateSlug(slug){
-this.clickedOn = slug
 		},
 		editSmoothie(e, slug) {
 			if (e.target.classList.contains('delete')) return
