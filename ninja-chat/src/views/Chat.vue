@@ -3,11 +3,19 @@
 		<h2 class="center teal-text">Real-time chat</h2>
 		<div class="card">
 			<div class="card-content">
-				<ul class="messages">
-					<li v-for="{id, name, content, timestamp} in messages" :key="id">
-						<span class="teal-text">{{name}}</span>
-						<span class="grey-text text-darken-3 message">{{content}}</span>
-						<span class="grey-text time">{{timestamp}}</span>
+				<ul class="messages" v-chat-scroll>
+					<li v-for="{ id, name, content, formatedTime } in messages" :key="id">
+						<span class="teal-text">{{ name }}</span>
+						<span class="grey-text text-darken-3 message">
+							{{
+							content
+							}}
+						</span>
+						<span class="grey-text time">
+							{{
+							formatedTime
+							}}
+						</span>
 					</li>
 				</ul>
 			</div>
@@ -20,7 +28,9 @@
 
 <script>
 import NewMessage from '../components/NewMessage'
+
 import db from '../firebase/init'
+import moment from 'moment'
 
 export default {
 	name: 'Chat',
@@ -48,10 +58,22 @@ export default {
 					name,
 					content,
 					timestamp,
+					formatedTime: moment(timestamp).fromNow(),
 				})
 			})
 		})
+		window.setInterval(() => {
+			this.messages.forEach(message => {
+				message.formatedTime = moment(message.timestamp).fromNow()
+			})
+		}, 60000);
 	},
+	// computed: {
+	// 	reverseOrder(){
+	// 		const copy = [...this.messages]
+	// 		return copy.reverse()
+	// 	}
+	// },
 }
 </script>
 
@@ -70,5 +92,15 @@ span
 
 .time
 	display: block
-	font-size: 1.2em
+	font-size: 1em
+.messages
+	max-height: 300px
+	overflow: auto
+
+	&::-webkit-scrollbar
+		width: 3px
+	&::-webkit-scrollbar-track
+		background: #ddd
+	&::-webkit-scrollbar-thumb
+		background: #aaa
 </style>

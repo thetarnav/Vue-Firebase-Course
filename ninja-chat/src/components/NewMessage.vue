@@ -32,6 +32,7 @@ export default {
 		addMessage() {
 			if (!this.newMessage)
 				this.feedback = 'You must enter something in order to send it'
+			else if (this.newMessage.length > 100) this.feedback = 'Keep messages shorter please'
 			else {
 				db.collection('messages')
 					.add({
