@@ -10,10 +10,15 @@ const routes = [
 		name: 'MapView',
 		component: MapView,
 	},
+	{
+		path: '/signup',
+		name: 'SignUp',
+		component: () => import('@/views/SignUp.vue'),
+	},
 ]
 
 const router = new VueRouter({
-  routes
+	routes,
 })
 
 export default router
