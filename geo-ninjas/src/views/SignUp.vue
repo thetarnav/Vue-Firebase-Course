@@ -12,12 +12,12 @@
 			</div>
 			<div class="field">
 				<label for="alias">Alias</label>
-				<input type="text" name="alias" v-model="alias" />
+				<input autocomplete="off" type="text" name="alias" v-model="alias" />
 			</div>
 			<div class="field center last">
 				<button class="btn deep-purple">Sign up</button>
 			</div>
-			<Feedback :message="feedback"/>
+			<Feedback :message="feedback" />
 		</form>
 	</div>
 </template>
@@ -26,7 +26,7 @@
 import Feedback from '@/components/Feedback'
 
 import slugify from 'slugify'
-import db from '@/firebase/init'
+import { db, auth } from '@/firebase/init'
 
 const inputErrAn = input => {
 	input.classList.remove('wrong')
@@ -51,27 +51,53 @@ export default {
 	methods: {
 		checkInput(inputs) {
 			const unfilled = inputs.find(input => !input.value)
-			this.feedback = null
 			if (unfilled) {
 				this.feedback = "Don't leave empty " + unfilled.name
 				inputErrAn(unfilled)
 			}
 		},
 		signUp() {
+			// checking if every input is filled
+			// if not indicates that to the user & stopping function
+			this.feedback = null
 			this.checkInput([...document.querySelectorAll('input')])
 			if (!this.email || !this.password || !this.alias) return
+
+			// now we create slug from inputted alias
 			this.slug = slugify(this.alias, {
 				replacement: '-',
 				remove: /[$*_+~.()'"!\-:@]/g,
 				lower: true,
 			})
+
+			// checking if the slug already exists in the database
+			// and if it does: alerting that to the user & stopping function
 			const ref = db.collection('users').doc(this.slug)
-			ref.get().then(doc => {
-				if (doc.exists) {
-					this.feedback = "This alias is already taken"
-				}
-			})
-			console.log(this.slug);
+			ref.get()
+				.then(doc => {
+					if (doc.exists) {
+						this.feedback = 'This alias is already taken'
+						inputErrAn(document.querySelector('input[name=alias]'))
+						return
+					}
+					// now we can sign up a new user in the firebase auth:
+					auth
+						.createUserWithEmailAndPassword(this.email, this.password)
+						// if signing up was successful proceeding to creating relative user document inside firestore:
+						.then(cred => {
+							ref.set({
+								alias: this.alias,
+								geolocation: null,
+								user_id: cred.user.uid,
+							})
+						})
+						.then(() => this.$router.push({name: 'MapView'}))
+						.catch(err => (this.feedback = err.message))
+				})
+				.catch(err => {
+					console.error(err)
+					this.feedback = 'Something went wrong, Sorry!'
+				})
 		},
 	},
 }
