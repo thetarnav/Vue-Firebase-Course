@@ -1,7 +1,7 @@
 <template>
-	<div class="sign-up container">
-		<form class="card-panel" @submit.prevent="signUp">
-			<h2 class="center deep-purple-text">Create a new ninja</h2>
+	<div class="login container">
+		<form class="card-panel" @submit.prevent="login">
+			<h2 class="center deep-purple-text">It's time to login!</h2>
 			<div class="field">
 				<label for="email">Email</label>
 				<input type="email" name="email" v-model="email" />
@@ -10,12 +10,8 @@
 				<label for="password">Password</label>
 				<input type="password" name="password" v-model="password" />
 			</div>
-			<div class="field">
-				<label for="alias">Alias</label>
-				<input autocomplete="off" type="text" name="alias" v-model="alias" />
-			</div>
 			<div class="field center last">
-				<button class="btn deep-purple">Sign up</button>
+				<button class="btn deep-purple">Login</button>
 			</div>
 			<Feedback :message="feedback" />
 		</form>
@@ -23,10 +19,8 @@
 </template>
 
 <script>
+import { auth } from '../firebase/init'
 import Feedback from '@/components/Feedback'
-
-import slugify from 'slugify'
-import { db, auth } from '../firebase/init'
 
 const inputErrAn = input => {
 	input.classList.remove('wrong')
@@ -35,7 +29,7 @@ const inputErrAn = input => {
 }
 
 export default {
-	name: 'SignUp',
+	name: 'Login',
 	components: {
 		Feedback,
 	},
@@ -43,9 +37,7 @@ export default {
 		return {
 			email: null,
 			password: null,
-			alias: null,
 			feedback: null,
-			slug: null,
 		}
 	},
 	methods: {
@@ -56,48 +48,17 @@ export default {
 				inputErrAn(unfilled)
 			}
 		},
-		signUp() {
+		login() {
 			// checking if every input is filled
 			// if not indicates that to the user & stopping function
 			this.feedback = null
 			this.checkInput([...document.querySelectorAll('input')])
-			if (!this.email || !this.password || !this.alias) return
+			if (!this.email || !this.password) return
 
-			// now we create slug from inputted alias
-			this.slug = slugify(this.alias, {
-				replacement: '-',
-				remove: /[$*_+~.()'"!\-:@]/g,
-				lower: true,
-			})
-
-			// checking if the slug already exists in the database
-			// and if it does: alerting that to the user & stopping function
-			const ref = db.collection('users').doc(this.slug)
-			ref.get()
-				.then(doc => {
-					if (doc.exists) {
-						this.feedback = 'This alias is already taken'
-						inputErrAn(document.querySelector('input[name=alias]'))
-						return
-					}
-					// now we can sign up a new user in the firebase auth:
-					auth
-						.createUserWithEmailAndPassword(this.email, this.password)
-						// if signing up was successful proceeding to creating relative user document inside firestore:
-						.then(cred => {
-							ref.set({
-								alias: this.alias,
-								geolocation: null,
-								user_id: cred.user.uid,
-							})
-						})
-						.then(() => this.$router.push({name: 'MapView'}))
-						.catch(err => (this.feedback = err.message))
-				})
-				.catch(err => {
-					console.error(err)
-					this.feedback = 'Something went wrong, Sorry!'
-				})
+			auth
+				.signInWithEmailAndPassword(this.email, this.password)
+				.then(() => this.$router.push({ name: 'MapView' }))
+				.catch(err => err.message && (this.feedback = err.message))
 		},
 	},
 }
@@ -134,8 +95,8 @@ export default {
 input.wrong
   +angry-wiggle
 
-.sign-up
-	max-width: 400px
+.login
+	max-width: 500px
 	margin-top: 60px
 h2
 	font-size: 2.4em

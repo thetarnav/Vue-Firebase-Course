@@ -5,6 +5,8 @@
 </template>
 
 <script>
+import { db, auth } from '../firebase/init'
+
 export default {
 	name: 'MapView',
 	data() {
@@ -30,6 +32,8 @@ export default {
 	},
 	mounted() {
 		this.renderMap()
+		console.log(auth.currentUser);
+		
 	},
 }
 </script>
