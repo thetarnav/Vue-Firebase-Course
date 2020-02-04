@@ -135,7 +135,7 @@ input.wrong
   +angry-wiggle
 
 .sign-up
-	max-width: 400px
+	max-width: 450px
 	margin-top: 60px
 h2
 	font-size: 2.4em

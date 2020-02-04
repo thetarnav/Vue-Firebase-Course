@@ -96,7 +96,7 @@ input.wrong
   +angry-wiggle
 
 .login
-	max-width: 500px
+	max-width: 450px
 	margin-top: 60px
 h2
 	font-size: 2.4em

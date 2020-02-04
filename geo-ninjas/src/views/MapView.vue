@@ -28,6 +28,37 @@ export default {
 				minZoom: 3,
 				streetViewControl: false,
 			})
+			// creating markers from users locations:
+			db.collection('users')
+				.get()
+				.then(snapshot =>
+					snapshot.forEach(doc => {
+						const data = doc.data()
+						if (!data.geolocation) return
+						const circle = new google.maps.Circle({
+							strokeColor: '#ffffff',
+							strokeOpacity: 0.7,
+							strokeWeight: 1,
+							fillColor: '#5e35b1',
+							fillOpacity: 0.5,
+							center: data.geolocation,
+							radius: 40000,
+							map,
+						})
+						const marker = new google.maps.Marker({
+							position: data.geolocation,
+							title: data.alias,
+							map,
+						})
+						// adding click event to the marker:
+						marker.addListener('click', () =>
+							this.$router.push({
+								name: 'Profile',
+								params: { id: doc.id },
+							}),
+						)
+					}),
+				)
 		},
 	},
 	mounted() {
@@ -37,7 +68,9 @@ export default {
 				// 1st parameter -> callback function: success
 				// updating coords from user geolocation
 				pos => {
-					const { latitude: lat, longitude: lng } = pos.coords
+					let { latitude: lat, longitude: lng } = pos.coords
+					lat = Math.round(lat)
+					lng = Math.round(lng)
 					this.lat = lat
 					this.lng = lng
 					this.renderMap()

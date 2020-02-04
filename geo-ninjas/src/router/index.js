@@ -24,6 +24,14 @@ const routes = [
 		name: 'Login',
 		component: () => import('@/views/Login.vue'),
 	},
+	{
+		path: '/profile/:id',
+		name: 'Profile',
+		component: () => import('@/views/Profile.vue'),
+		meta: {
+			requiresAuth: true,
+		},
+	},
 ]
 
 const router = new VueRouter({

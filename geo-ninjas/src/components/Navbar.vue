@@ -4,16 +4,16 @@
 			<div class="container">
 				<router-link :to="{name: 'MapView'}" class="brand-logo left">GeoNinjas!</router-link>
 				<ul class="right">
-					<li v-if="!user">
+					<li v-if="!loggedIn">
 						<router-link :to="{name: 'SignUp'}">Sign up</router-link>
 					</li>
-					<li v-if="!user">
+					<li v-if="!loggedIn">
 						<router-link :to="{name: 'Login'}">Login</router-link>
 					</li>
-					<li v-if="user">
-						{{ user.email }}
+					<li v-if="loggedIn">
+						<a>{{ alias }}</a>
 					</li>
-					<li v-if="user">
+					<li v-if="loggedIn">
 						<a @click="logout()">Logout</a>
 					</li>
 				</ul>
@@ -23,13 +23,14 @@
 </template>
 
 <script>
-import { auth } from '../firebase/init'
+import { db, auth } from '../firebase/init'
 
 export default {
 	name: 'Navbar',
 	data() {
 		return {
-			user: null,
+			loggedIn: null,
+			alias: null,
 		}
 	},
 	methods: {
@@ -40,7 +41,16 @@ export default {
 		},
 	},
 	created() {
-		auth.onAuthStateChanged(user => (this.user = user))
+		auth.onAuthStateChanged(user => {
+			this.loggedIn = Boolean(user)
+			if (user) {
+				db.collection('users')
+					.where('user_id', '==', user.uid)
+					.get()
+					.then(snapshot => snapshot.forEach(doc => (this.alias = doc.data().alias)))
+					.catch(() => (this.alias = null))
+			}
+		})
 	},
 }
 </script>
