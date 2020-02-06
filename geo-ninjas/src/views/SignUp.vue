@@ -88,10 +88,10 @@ export default {
 							ref.set({
 								alias: this.alias,
 								geolocation: null,
-								user_id: cred.user.uid,
+								uid: cred.user.uid,
 							})
 						})
-						.then(() => this.$router.push({name: 'MapView'}))
+						.then(() => this.$router.push({ name: 'MapView' }))
 						.catch(err => (this.feedback = err.message))
 				})
 				.catch(err => {

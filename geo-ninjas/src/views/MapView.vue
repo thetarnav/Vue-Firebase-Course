@@ -5,10 +5,17 @@
 </template>
 
 <script>
-import { db, auth } from '../firebase/init'
+import { db } from '../firebase/init'
+import firebase from 'firebase/app'
+
+const random = (min, max, mathFunc) => {
+	let w = Math.random() * (max - min) + min
+	return !mathFunc ? w : Math[mathFunc](w)
+}
 
 export default {
 	name: 'MapView',
+	props: ['user'],
 	data() {
 		return {
 			lat: 53,
@@ -33,7 +40,10 @@ export default {
 				.get()
 				.then(snapshot =>
 					snapshot.forEach(doc => {
-						const data = doc.data()
+						const data = doc.data(),
+							{ latitude: lat, longitude: lng } = data.geolocation,
+							position = { lat, lng }
+
 						if (!data.geolocation) return
 						const circle = new google.maps.Circle({
 							strokeColor: '#ffffff',
@@ -41,12 +51,12 @@ export default {
 							strokeWeight: 1,
 							fillColor: '#5e35b1',
 							fillOpacity: 0.5,
-							center: data.geolocation,
+							center: position,
 							radius: 40000,
 							map,
 						})
 						const marker = new google.maps.Marker({
-							position: data.geolocation,
+							position: position,
 							title: data.alias,
 							map,
 						})
@@ -62,48 +72,39 @@ export default {
 		},
 	},
 	mounted() {
-		// get user geolocation
-		if (navigator.geolocation) {
-			navigator.geolocation.getCurrentPosition(
-				// 1st parameter -> callback function: success
-				// updating coords from user geolocation
-				pos => {
-					let { latitude: lat, longitude: lng } = pos.coords
-					lat = Math.round(lat)
-					lng = Math.round(lng)
-					this.lat = lat
-					this.lng = lng
-					this.renderMap()
+		this.renderMap()
+	},
+	watch: {
+		user: function() {
+			if (!this.user) return
+			if (navigator.geolocation)
+				navigator.geolocation.getCurrentPosition(
+					// 1st parameter -> callback function: success
+					// updating coords from user geolocation
+					pos => {
+						let { latitude: lat, longitude: lng } = pos.coords
+						lat += random(-0.2, 0.2)
+						lng += random(-0.2, 0.2)
+						this.lat = lat
+						this.lng = lng
 
-					// updating user geolocation in the database
-					const userId = auth.currentUser.uid,
-						collection = db.collection('users')
-					collection
-						.where('user_id', '==', userId)
-						.get()
-						.then(snapshot => {
-							snapshot.forEach(doc => {
-								collection.doc(doc.id).update({
-									geolocation: {
-										lat,
-										lng,
-									},
-								})
+						// updating user geolocation in the database
+						db.collection('users')
+							.doc(this.user.id)
+							.update({
+								geolocation: new firebase.firestore.GeoPoint(lat, lng),
 							})
-						})
-				},
-				// 2nd parameter -> callback function: failure
-				// logging error
-				console.log,
-				// 3rd parameter -> options
-				// maximumAge: gets stored info about user geolocation if its not older than 1min
-				// timeout: max 3s to get the location
-				{ maximumAge: 60000, timeout: 3000 },
-			)
-		} else {
-			// positions the map by default values
+					},
+					// 2nd parameter -> callback function: failure
+					// logging error
+					console.log,
+					// 3rd parameter -> options
+					// maximumAge: gets stored info about user geolocation if its not older than 1min
+					// timeout: max 3s to get the location
+					{ maximumAge: 60000, timeout: 3000 },
+				)
 			this.renderMap()
-		}
+		},
 	},
 }
 </script>
