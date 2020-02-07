@@ -13,6 +13,11 @@ const random = (min, max, mathFunc) => {
 	return !mathFunc ? w : Math[mathFunc](w)
 }
 
+let map = null,
+	markers = []
+
+const removeMarkers = () => markers.forEach(marker => marker.setMap(null))
+
 export default {
 	name: 'MapView',
 	props: ['user'],
@@ -23,18 +28,10 @@ export default {
 		}
 	},
 	methods: {
-		renderMap() {
-			const mapEl = document.querySelector('#map')
-			const map = new google.maps.Map(mapEl, {
-				center: {
-					lat: this.lat,
-					lng: this.lng,
-				},
-				zoom: 5,
-				maxZoom: 15,
-				minZoom: 3,
-				streetViewControl: false,
-			})
+		renderMarkers() {
+			// removing existing markers:
+			removeMarkers()
+
 			// creating markers from users locations:
 			db.collection('users')
 				.get()
@@ -60,6 +57,7 @@ export default {
 							title: data.alias,
 							map,
 						})
+						markers.push(circle, marker)
 						// adding click event to the marker:
 						marker.addListener('click', () =>
 							this.$router.push({
@@ -69,6 +67,20 @@ export default {
 						)
 					}),
 				)
+		},
+		renderMap() {
+			const mapEl = document.querySelector('#map')
+			map = new google.maps.Map(mapEl, {
+				center: {
+					lat: this.lat,
+					lng: this.lng,
+				},
+				zoom: 5,
+				maxZoom: 15,
+				minZoom: 3,
+				streetViewControl: false,
+			})
+			this.renderMarkers()
 		},
 	},
 	mounted() {
@@ -83,10 +95,12 @@ export default {
 					// updating coords from user geolocation
 					pos => {
 						let { latitude: lat, longitude: lng } = pos.coords
-						lat += random(-0.2, 0.2)
-						lng += random(-0.2, 0.2)
+						lat += random(-0.25, 0.25)
+						lng += random(-0.25, 0.25)
 						this.lat = lat
 						this.lng = lng
+
+						this.renderMarkers()
 
 						// updating user geolocation in the database
 						db.collection('users')
@@ -103,7 +117,6 @@ export default {
 					// timeout: max 3s to get the location
 					{ maximumAge: 60000, timeout: 3000 },
 				)
-			this.renderMap()
 		},
 	},
 }
