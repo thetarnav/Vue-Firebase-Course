@@ -36,6 +36,7 @@ const routes = [
 
 const router = new VueRouter({
 	routes,
+	mode: 'history',
 })
 
 // check if route requires authentication

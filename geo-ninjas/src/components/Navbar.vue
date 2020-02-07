@@ -11,7 +11,12 @@
 						<router-link :to="{name: 'Login'}">Login</router-link>
 					</li>
 					<li v-if="user">
-						<a>{{ user.alias }}</a>
+						<router-link
+							:to="{
+								name: 'Profile',
+								params: { id: user.id },
+							}"
+						>{{ user.alias }}</router-link>
 					</li>
 					<li v-if="user">
 						<a @click="logout()">Logout</a>
