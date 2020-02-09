@@ -27,6 +27,8 @@ import Feedback from '@/components/Feedback'
 
 import slugify from 'slugify'
 import { db, auth } from '../firebase/init'
+import firebase from 'firebase/app'
+import functions from 'firebase/functions'
 
 const inputErrAn = input => {
 	input.classList.remove('wrong')
@@ -72,10 +74,11 @@ export default {
 
 			// checking if the slug already exists in the database
 			// and if it does: alerting that to the user & stopping function
-			const ref = db.collection('users').doc(this.slug)
-			ref.get()
-				.then(doc => {
-					if (doc.exists) {
+			const checkAlias = firebase.functions().httpsCallable('checkAlias')
+			checkAlias({ slug: this.slug })
+				.then(result => {
+					console.log(result.data.unique)
+					if (!result.data.unique) {
 						this.feedback = 'This alias is already taken'
 						inputErrAn(document.querySelector('input[name=alias]'))
 						return
@@ -85,11 +88,13 @@ export default {
 						.createUserWithEmailAndPassword(this.email, this.password)
 						// if signing up was successful proceeding to creating relative user document inside firestore:
 						.then(cred => {
-							ref.set({
-								alias: this.alias,
-								geolocation: null,
-								uid: cred.user.uid,
-							})
+							db.collection('users')
+								.doc(this.slug)
+								.set({
+									alias: this.alias,
+									geolocation: null,
+									uid: cred.user.uid,
+								})
 						})
 						.then(() => this.$router.push({ name: 'MapView' }))
 						.catch(err => (this.feedback = err.message))
