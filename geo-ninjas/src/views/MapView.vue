@@ -95,8 +95,8 @@ export default {
 					// updating coords from user geolocation
 					pos => {
 						let { latitude: lat, longitude: lng } = pos.coords
-						lat += random(-0.25, 0.25)
-						lng += random(-0.25, 0.25)
+						lat += random(-0.23, 0.23)
+						lng += random(-0.23, 0.23)
 						this.lat = lat
 						this.lng = lng
 
